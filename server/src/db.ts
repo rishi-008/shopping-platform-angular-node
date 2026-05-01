@@ -2,9 +2,9 @@ import mysql from 'mysql2/promise';
 import fs from 'node:fs';
 import { env } from './env.js';
 
-function buildSslOptions(): false | { ca?: string; rejectUnauthorized: boolean } {
+function buildSslOptions(): undefined | { ca?: string; rejectUnauthorized: boolean } {
   const mode = env.db.sslMode;
-  if (mode === 'disable') return false;
+  if (mode === 'disable') return undefined;
 
   const caFromBase64 = env.db.sslCaBase64?.trim();
   const caFromPath = env.db.sslCaPath?.trim();

@@ -1,7 +1,8 @@
 import type { Router } from 'express';
 import { pool } from '../db.js';
+import type { RowDataPacket } from 'mysql2';
 
-type ItemRow = {
+type ItemRow = RowDataPacket & {
   Item_Id: number;
   Item_name: string;
   Price: string | number;
