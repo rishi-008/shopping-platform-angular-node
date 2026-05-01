@@ -25,7 +25,7 @@ if (!isset($_SESSION['cart'])) {
 }
 
 // Google Maps API Key
-$google_maps_api_key = "AIzaSyAF2BPHOPRmQ0p64bPVYuquYmqtsHzmoOg"; 
+$google_maps_api_key = getenv('GOOGLE_MAPS_API_KEY') ?: '';
 ?>
 
 <!DOCTYPE html>
