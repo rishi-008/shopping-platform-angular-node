@@ -35,5 +35,24 @@ services:
     ports:
       - "${API_PORT:-3001}:${API_PORT:-3001}"
 
+  php:
+    build:
+      context: ./php
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-osp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-change_me}
+      DB_NAME: ${DB_NAME:-osp_db}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    volumes:
+      - ./:/var/www/html:ro
+    ports:
+      - "${PHP_PORT:-8081}:80"
+
 volumes:
   db_data:
