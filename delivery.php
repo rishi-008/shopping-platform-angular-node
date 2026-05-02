@@ -55,7 +55,7 @@ $google_maps_api_key = getenv('GOOGLE_MAPS_API_KEY') ?: '';
             background-color: #f8f9fa;
         }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=<?= $google_maps_api_key ?>&libraries=places,directions"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?= $google_maps_api_key ?>&libraries=places"></script>
 </head>
 <body>
     <div class="container">
