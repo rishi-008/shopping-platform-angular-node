@@ -14,6 +14,8 @@ if (empty($_SESSION['cart'])) {
     exit();
 }
 
+$totalPrice = (float)$_SESSION['current_order']['total_price'];
+
 // Get delivery details from session
 $deliveryDetails = $_SESSION['delivery_details'];
 
@@ -128,7 +130,7 @@ try {
         "iid", 
         $_SESSION['user_id'],
         $tripId,
-        $_SESSION['current_order']['total_price']
+        $totalPrice
     );
     $orderStmt->execute();
     $orderId = $conn->insert_id;
@@ -147,7 +149,7 @@ try {
     $paymentStmt->bind_param(
         "ids", 
         $orderId,
-        $_SESSION['current_order']['total_price'],
+        $totalPrice,
         $transactionId
     );
     $paymentStmt->execute();
@@ -178,16 +180,17 @@ try {
 
     $conn->commit();
 
-    // Clear sessions and set success data
-    unset($_SESSION['cart'], $_SESSION['current_order'], $_SESSION['delivery_details']);
-    
+    // Set success data
     $_SESSION['payment_success'] = [
         'order_id' => $orderId,
-        'amount' => (float)$_SESSION['current_order']['total_price'], // Ensure numeric type
+        'amount' => $totalPrice,
         'transaction_id' => $transactionId,
         'delivery_date' => $deliveryDetails['delivery_date'],
         'delivery_time' => $deliveryDetails['delivery_time']
     ];
+
+    // Clear sessions
+    unset($_SESSION['cart'], $_SESSION['current_order'], $_SESSION['delivery_details']);
     
     header("Location: payment_success.php");
     exit();
