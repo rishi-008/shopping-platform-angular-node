@@ -13,6 +13,12 @@ function mustGet(name: string, fallback?: string): string {
 export const env = {
   port: Number(process.env.PORT ?? '3001'),
   corsOrigin: mustGet('CORS_ORIGIN', 'http://localhost:4200'),
+  jwt: {
+    accessSecret: mustGet('JWT_ACCESS_SECRET'),
+    refreshSecret: mustGet('JWT_REFRESH_SECRET'),
+    accessTtlSeconds: Number(process.env.JWT_ACCESS_TTL_SECONDS ?? '900'),
+    refreshTtlSeconds: Number(process.env.JWT_REFRESH_TTL_SECONDS ?? String(60 * 60 * 24 * 30))
+  },
   db: {
     host: mustGet('DB_HOST', 'localhost'),
     user: mustGet('DB_USER', 'root'),

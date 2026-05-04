@@ -1,0 +1,24 @@
+-- Migration: add JWT refresh tokens + DB-backed cart
+-- Safe to run on an existing DB (uses IF NOT EXISTS).
+
+CREATE TABLE IF NOT EXISTS RefreshToken (
+    RefreshToken_Id INT AUTO_INCREMENT PRIMARY KEY,
+    User_Id INT NOT NULL,
+    Token_Id_Hash CHAR(64) NOT NULL,
+    Expires_At DATETIME NOT NULL,
+    Revoked_At DATETIME NULL,
+    Created_At DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_refresh_token_id_hash (Token_Id_Hash),
+    FOREIGN KEY (User_Id) REFERENCES Users(User_Id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS CartItem (
+    User_Id INT NOT NULL,
+    Item_Id INT NOT NULL,
+    Quantity INT NOT NULL DEFAULT 1,
+    Created_At DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Updated_At DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (User_Id, Item_Id),
+    FOREIGN KEY (User_Id) REFERENCES Users(User_Id) ON DELETE CASCADE,
+    FOREIGN KEY (Item_Id) REFERENCES Item(Item_Id) ON DELETE CASCADE
+);

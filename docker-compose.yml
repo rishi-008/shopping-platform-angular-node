@@ -26,6 +26,10 @@ services:
     environment:
       PORT: ${API_PORT:-3001}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev_access_secret_change_me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me}
+      JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
+      JWT_REFRESH_TTL_SECONDS: ${JWT_REFRESH_TTL_SECONDS:-2592000}
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: ${DB_USER:-osp_user}

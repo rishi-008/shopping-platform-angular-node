@@ -11,6 +11,17 @@ This repo currently contains a PHP app plus a new Node/TypeScript API in `server
 docker compose up -d --build
 ```
 
+JWT env vars required for the Node API:
+
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+
+If you’re using `docker-compose` v1 on the droplet, use:
+
+```bash
+docker-compose up -d --build
+```
+
 ### (Optional) Run the legacy PHP app (Docker)
 
 This is only for verifying the old PHP app still works.
@@ -29,7 +40,15 @@ Then open: `http://<droplet-ip>:8081/index.php`
 - `GET http://localhost:3001/api/health`
 - `GET http://localhost:3001/api/items?department=ELECTRONICS`
 
+Auth + cart:
+
+- `POST http://localhost:3001/api/auth/register`
+- `POST http://localhost:3001/api/auth/login`
+- `POST http://localhost:3001/api/auth/refresh`
+- `GET http://localhost:3001/api/cart` (Bearer token)
+
 ### Notes
 
 - The MySQL database is seeded on first run from `db/init.sql`.
+- If you already have an existing DB volume, apply new tables with `db/migrations/001_add_auth_cart.sql`.
 - To reset the DB: `docker compose down -v`
