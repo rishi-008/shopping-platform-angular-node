@@ -32,6 +32,14 @@
 	border-radius: 6px;
 }
 
+.thumb {
+	width: 100%;
+	height: 140px;
+	object-fit: contain;
+	display: block;
+	margin-bottom: 8px;
+}
+
 .title {
 	font-weight: 600;
 }

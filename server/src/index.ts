@@ -6,6 +6,7 @@ import { registerHealthRoutes } from './routes/health.js';
 import { registerItemRoutes } from './routes/items.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerCartRoutes } from './routes/cart.js';
+import { registerCheckoutRoutes } from './routes/checkout.js';
 
 const app = express();
 
@@ -17,6 +18,7 @@ registerHealthRoutes(api);
 registerItemRoutes(api);
 registerAuthRoutes(api);
 registerCartRoutes(api);
+registerCheckoutRoutes(api);
 app.use('/api', api);
 
 app.listen(env.port, () => {

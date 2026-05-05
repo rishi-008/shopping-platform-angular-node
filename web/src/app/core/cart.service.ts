@@ -17,6 +17,12 @@ export type CartResponse = {
   total: number;
 };
 
+export type CheckoutResponse = {
+  ok: true;
+  orderId: number;
+  total: number;
+};
+
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private readonly http = inject(HttpClient);
@@ -40,5 +46,9 @@ export class CartService {
 
   clearCart() {
     return this.http.delete<{ ok: true }>(`${this.apiBaseUrl}/cart`);
+  }
+
+  checkout() {
+    return this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, {});
   }
 }

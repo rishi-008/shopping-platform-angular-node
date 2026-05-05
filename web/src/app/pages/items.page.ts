@@ -8,6 +8,45 @@ import { ItemsService, type Item } from '../core/items.service';
   standalone: true,
   selector: 'app-items-page',
   imports: [RouterLink],
+  styles: [
+    `
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .card {
+        border: 1px solid;
+        padding: 12px;
+        border-radius: 6px;
+      }
+
+      .thumb {
+        width: 100%;
+        height: 140px;
+        object-fit: contain;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .title {
+        font-weight: 600;
+      }
+
+      .meta {
+        font-size: 14px;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 12px;
+      }
+    `
+  ],
   template: `
     <h2>Items</h2>
 
@@ -18,6 +57,10 @@ import { ItemsService, type Item } from '../core/items.service';
     <div class="grid">
       @for (item of items(); track item.Item_Id) {
         <div class="card">
+          @if (item.Image_URL) {
+            <img class="thumb" [src]="'/' + item.Image_URL" [alt]="item.Item_name" />
+          }
+
           <div class="title">{{ item.Item_name }}</div>
           <div class="meta">Department: {{ item.Department_Code }}</div>
           <div class="meta">Price: {{ item.Price }}</div>

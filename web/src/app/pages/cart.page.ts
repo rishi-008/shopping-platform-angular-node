@@ -13,6 +13,10 @@ import { CartService, type CartItem } from '../core/cart.service';
     <div class="row">
       <a routerLink="/items">Back to items</a>
       <button (click)="clear()" [disabled]="items().length === 0">Clear cart</button>
+
+      @if (items().length > 0) {
+        <a routerLink="/checkout">Checkout</a>
+      }
     </div>
 
     @if (error()) {
