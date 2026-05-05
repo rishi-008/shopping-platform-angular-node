@@ -7,6 +7,7 @@ import { registerItemRoutes } from './routes/items.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerCartRoutes } from './routes/cart.js';
 import { registerCheckoutRoutes } from './routes/checkout.js';
+import { registerOrdersRoutes } from './routes/orders.js';
 
 const app = express();
 
@@ -19,6 +20,7 @@ registerItemRoutes(api);
 registerAuthRoutes(api);
 registerCartRoutes(api);
 registerCheckoutRoutes(api);
+registerOrdersRoutes(api);
 app.use('/api', api);
 
 app.listen(env.port, () => {

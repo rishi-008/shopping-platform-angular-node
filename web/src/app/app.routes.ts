@@ -5,12 +5,14 @@ import { CartPage } from './pages/cart.page';
 import { CheckoutPage } from './pages/checkout.page';
 import { ItemsPage } from './pages/items.page';
 import { LoginPage } from './pages/login.page';
+import { OrdersPage } from './pages/orders.page';
 
 export const routes: Routes = [
 	{ path: '', pathMatch: 'full', redirectTo: 'items' },
 	{ path: 'login', component: LoginPage },
 	{ path: 'items', component: ItemsPage, canActivate: [authGuard] },
 	{ path: 'cart', component: CartPage, canActivate: [authGuard] },
+	{ path: 'orders', component: OrdersPage, canActivate: [authGuard] },
 	{ path: 'checkout', component: CheckoutPage, canActivate: [authGuard] },
 	{ path: '**', redirectTo: 'items' }
 ];
