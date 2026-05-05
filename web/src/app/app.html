@@ -1,0 +1,15 @@
+<nav class="nav">
+  <a routerLink="/items">Items</a>
+  <a routerLink="/cart">Cart</a>
+  <span class="spacer"></span>
+
+  @if (isLoggedIn()) {
+    <button (click)="logout()">Logout</button>
+  } @else {
+    <a routerLink="/login">Login</a>
+  }
+</nav>
+
+<main class="container">
+  <router-outlet></router-outlet>
+</main>
