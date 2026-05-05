@@ -21,6 +21,15 @@ export type CheckoutResponse = {
   ok: true;
   orderId: number;
   total: number;
+  tripId: number;
+};
+
+export type DeliveryPlanPayload = {
+  branchId: number;
+  deliveryDate: string;
+  deliveryTime: string;
+  distanceMeters: number;
+  durationSeconds: number;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -48,7 +57,7 @@ export class CartService {
     return this.http.delete<{ ok: true }>(`${this.apiBaseUrl}/cart`);
   }
 
-  checkout() {
-    return this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, {});
+  checkout(delivery: DeliveryPlanPayload) {
+    return this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, { delivery });
   }
 }

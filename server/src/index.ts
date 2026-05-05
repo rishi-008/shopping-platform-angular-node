@@ -8,6 +8,9 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerCartRoutes } from './routes/cart.js';
 import { registerCheckoutRoutes } from './routes/checkout.js';
 import { registerOrdersRoutes } from './routes/orders.js';
+import { registerPublicConfigRoutes } from './routes/publicConfig.js';
+import { registerMeRoutes } from './routes/me.js';
+import { registerBranchRoutes } from './routes/branches.js';
 
 const app = express();
 
@@ -16,8 +19,11 @@ app.use(express.json());
 
 const api = express.Router();
 registerHealthRoutes(api);
+registerPublicConfigRoutes(api);
 registerItemRoutes(api);
 registerAuthRoutes(api);
+registerMeRoutes(api);
+registerBranchRoutes(api);
 registerCartRoutes(api);
 registerCheckoutRoutes(api);
 registerOrdersRoutes(api);

@@ -13,6 +13,7 @@ function mustGet(name: string, fallback?: string): string {
 export const env = {
   port: Number(process.env.PORT ?? '3001'),
   corsOrigin: mustGet('CORS_ORIGIN', 'http://localhost:4200'),
+  googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
   jwt: {
     accessSecret: mustGet('JWT_ACCESS_SECRET'),
     refreshSecret: mustGet('JWT_REFRESH_SECRET'),

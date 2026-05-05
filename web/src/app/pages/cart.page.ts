@@ -15,7 +15,7 @@ import { CartService, type CartItem } from '../core/cart.service';
       <button (click)="clear()" [disabled]="items().length === 0">Clear cart</button>
 
       @if (items().length > 0) {
-        <a routerLink="/checkout">Checkout</a>
+        <a routerLink="/delivery">Checkout</a>
       }
     </div>
 

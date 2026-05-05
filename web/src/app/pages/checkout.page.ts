@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { CartService, type CartItem } from '../core/cart.service';
+import { DeliveryService } from '../core/delivery.service';
 
 @Component({
   standalone: true,
@@ -21,6 +22,7 @@ import { CartService, type CartItem } from '../core/cart.service';
 
     @if (orderId()) {
       <p>Order placed! Order ID: {{ orderId() }}</p>
+      <p>Trip ID: {{ tripId() }}</p>
       <p>Total paid: {{ placedTotal() }}</p>
       <a routerLink="/items">Continue shopping</a>
     } @else if (items().length === 0) {
@@ -56,6 +58,7 @@ import { CartService, type CartItem } from '../core/cart.service';
 })
 export class CheckoutPage {
   private readonly cartService = inject(CartService);
+  private readonly deliveryService = inject(DeliveryService);
   private readonly router = inject(Router);
 
   readonly items = signal<CartItem[]>([]);
@@ -64,6 +67,7 @@ export class CheckoutPage {
   readonly isPlacing = signal(false);
   readonly orderId = signal<number | null>(null);
   readonly placedTotal = signal<number | null>(null);
+  readonly tripId = signal<number | null>(null);
 
   constructor() {
     this.refresh();
@@ -83,15 +87,24 @@ export class CheckoutPage {
 
   placeOrder() {
     this.error.set(null);
+
+    const delivery = this.deliveryService.getPlan();
+    if (!delivery) {
+      this.router.navigateByUrl('/delivery');
+      return;
+    }
+
     this.isPlacing.set(true);
 
     this.cartService
-      .checkout()
+      .checkout(delivery)
       .pipe(finalize(() => this.isPlacing.set(false)))
       .subscribe({
       next: (res) => {
         this.orderId.set(res.orderId);
         this.placedTotal.set(res.total);
+        this.tripId.set(res.tripId);
+        this.deliveryService.clearPlan();
         this.items.set([]);
         this.total.set(0);
       },
