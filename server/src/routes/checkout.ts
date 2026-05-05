@@ -19,6 +19,10 @@ type TruckRow = RowDataPacket & {
   Truck_Id: number;
 };
 
+type TruckAvailabilityRow = RowDataPacket & {
+  Availability: 'available' | 'in_transit' | 'maintenance';
+};
+
 type NextAvailableRow = RowDataPacket & {
   next_available: string | null;
 };
@@ -134,6 +138,56 @@ export function registerCheckoutRoutes(router: Router) {
       }
 
       const truckId = truckRows[0].Truck_Id;
+
+      // Lock the chosen truck row to reduce race conditions across concurrent checkouts.
+      const [truckAvailRows] = await connection.query<TruckAvailabilityRow[]>(
+        'SELECT Availability FROM Truck WHERE Truck_Id = :truckId FOR UPDATE',
+        { truckId }
+      );
+
+      if (truckAvailRows.length === 0) {
+        await connection.rollback();
+        return res.status(409).json({ error: 'Truck no longer available', nextAvailable: null });
+      }
+
+      const availability = truckAvailRows[0].Availability;
+      if (availability !== 'available' && availability !== 'in_transit') {
+        await connection.rollback();
+        return res.status(409).json({ error: 'Truck no longer available', nextAvailable: null });
+      }
+
+      // Re-check the trip schedule for this truck after acquiring the lock.
+      const [conflictingTrips] = await connection.query<RowDataPacket[]>(
+        `
+        SELECT 1
+        FROM Trip tr
+        WHERE tr.Truck_Id = :truckId
+          AND (
+            (tr.Delivery_Date = :deliveryDate AND tr.Delivery_Time BETWEEN SUBTIME(:deliveryTime, '01:00:00') AND ADDTIME(:deliveryTime, '01:00:00'))
+            OR CONCAT(tr.Delivery_Date, ' ', tr.Delivery_Time) > NOW()
+          )
+        LIMIT 1
+        `,
+        { truckId, deliveryDate, deliveryTime }
+      );
+
+      if (conflictingTrips.length > 0) {
+        const deliveryDateTime = `${deliveryDate} ${deliveryTime}`;
+        const [nextRows] = await connection.query<NextAvailableRow[]>(
+          `
+          SELECT MIN(CONCAT(tr.Delivery_Date, ' ', tr.Delivery_Time)) AS next_available
+          FROM Trip tr
+          WHERE CONCAT(tr.Delivery_Date, ' ', tr.Delivery_Time) > :deliveryDateTime
+          `,
+          { deliveryDateTime }
+        );
+
+        await connection.rollback();
+        return res.status(409).json({
+          error: 'No available trucks for your selected time',
+          nextAvailable: nextRows[0]?.next_available ?? null
+        });
+      }
 
       // 2) Create Trip
       const distanceKm = distanceMeters / 1000;

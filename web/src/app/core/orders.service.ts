@@ -15,6 +15,14 @@ export type OrderPayment = {
 export type Order = {
   orderId: number;
   orderDate: string;
+  tripId: number | null;
+  delivery: {
+    branchName: string | null;
+    deliveryDate: string | null;
+    deliveryTime: string | null;
+    distanceKm: number | null;
+    estimatedTimeHours: number | null;
+  } | null;
   total: number;
   status: string;
   payment: OrderPayment | null;

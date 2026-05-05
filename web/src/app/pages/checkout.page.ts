@@ -113,6 +113,16 @@ export class CheckoutPage {
           this.router.navigateByUrl('/login');
           return;
         }
+
+        if (err?.status === 409) {
+          this.router.navigateByUrl('/no-trucks', {
+            state: {
+              message: err?.error?.error || 'No available trucks for your selected time.',
+              nextAvailable: err?.error?.nextAvailable ?? null
+            }
+          });
+          return;
+        }
         this.error.set(err?.error?.error || err?.message || 'Checkout failed');
       }
     });

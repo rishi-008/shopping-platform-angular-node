@@ -14,6 +14,9 @@ export const env = {
   port: Number(process.env.PORT ?? '3001'),
   corsOrigin: mustGet('CORS_ORIGIN', 'http://localhost:4200'),
   googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
+  jobs: {
+    resetTrucksIntervalMs: Number(process.env.RESET_TRUCKS_INTERVAL_MS ?? String(60 * 60 * 1000))
+  },
   jwt: {
     accessSecret: mustGet('JWT_ACCESS_SECRET'),
     refreshSecret: mustGet('JWT_REFRESH_SECRET'),

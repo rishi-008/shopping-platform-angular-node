@@ -51,6 +51,7 @@ import { OrdersService, type Order } from '../core/orders.service';
           <tr>
             <th>Order</th>
             <th>Date</th>
+            <th>Delivery</th>
             <th>Total</th>
             <th>Order status</th>
             <th>Payment</th>
@@ -61,6 +62,14 @@ import { OrdersService, type Order } from '../core/orders.service';
             <tr>
               <td>#{{ o.orderId }}</td>
               <td>{{ o.orderDate | date: 'short' }}</td>
+              <td>
+                @if (o.delivery) {
+                  <div>Branch: {{ o.delivery.branchName }}</div>
+                  <div>When: {{ o.delivery.deliveryDate }} {{ o.delivery.deliveryTime }}</div>
+                } @else {
+                  <div>—</div>
+                }
+              </td>
               <td>{{ o.total }}</td>
               <td>{{ o.status }}</td>
               <td>
