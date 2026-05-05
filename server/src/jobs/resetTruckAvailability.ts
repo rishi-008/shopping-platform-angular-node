@@ -9,8 +9,10 @@ export async function resetTruckAvailability(): Promise<{ affectedRows: number }
     JOIN Trip tr ON t.Truck_Id = tr.Truck_Id
     SET t.Availability = 'available'
     WHERE
-      (tr.Delivery_Date < CURDATE()
-        OR (tr.Delivery_Date = CURDATE() AND tr.Delivery_Time < CURTIME()))
+      DATE_ADD(
+        TIMESTAMP(tr.Delivery_Date, tr.Delivery_Time),
+        INTERVAL ROUND(COALESCE(tr.Estimated_Time, 0) * 60) MINUTE
+      ) < NOW()
       AND t.Availability = 'in_transit'
     `
   );

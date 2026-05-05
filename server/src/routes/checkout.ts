@@ -107,8 +107,13 @@ export function registerCheckoutRoutes(router: Router) {
           FROM Trip tr
           WHERE tr.Truck_Id = t.Truck_Id
           AND (
-            (tr.Delivery_Date = :deliveryDate AND tr.Delivery_Time BETWEEN SUBTIME(:deliveryTime, '01:00:00') AND ADDTIME(:deliveryTime, '01:00:00'))
-            OR CONCAT(tr.Delivery_Date, ' ', tr.Delivery_Time) > NOW()
+              ABS(
+                TIMESTAMPDIFF(
+                  MINUTE,
+                  TIMESTAMP(tr.Delivery_Date, tr.Delivery_Time),
+                  TIMESTAMP(:deliveryDate, :deliveryTime)
+                )
+              ) <= 60
           )
         )
         AND (t.Availability = 'available' OR t.Availability = 'in_transit')
@@ -163,8 +168,13 @@ export function registerCheckoutRoutes(router: Router) {
         FROM Trip tr
         WHERE tr.Truck_Id = :truckId
           AND (
-            (tr.Delivery_Date = :deliveryDate AND tr.Delivery_Time BETWEEN SUBTIME(:deliveryTime, '01:00:00') AND ADDTIME(:deliveryTime, '01:00:00'))
-            OR CONCAT(tr.Delivery_Date, ' ', tr.Delivery_Time) > NOW()
+              ABS(
+                TIMESTAMPDIFF(
+                  MINUTE,
+                  TIMESTAMP(tr.Delivery_Date, tr.Delivery_Time),
+                  TIMESTAMP(:deliveryDate, :deliveryTime)
+                )
+              ) <= 60
           )
         LIMIT 1
         `,
@@ -245,10 +255,10 @@ export function registerCheckoutRoutes(router: Router) {
       await connection.query(
         `
         UPDATE Truck
-        SET Availability = 'in_transit'
+        SET Availability = IF(TIMESTAMP(:deliveryDate, :deliveryTime) <= NOW(), 'in_transit', Availability)
         WHERE Truck_Id = :truckId
         `,
-        { truckId }
+        { truckId, deliveryDate, deliveryTime }
       );
 
       await connection.query('DELETE FROM CartItem WHERE User_Id = :userId', { userId });
