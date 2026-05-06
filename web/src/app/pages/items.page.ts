@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { AuthService } from '../core/auth.service';
 import { CartService } from '../core/cart.service';
@@ -8,7 +8,7 @@ import { ItemsService, type Item } from '../core/items.service';
 @Component({
   standalone: true,
   selector: 'app-items-page',
-  imports: [RouterLink],
+  imports: [],
   template: `
     <h2>Items</h2>
 
@@ -29,7 +29,6 @@ import { ItemsService, type Item } from '../core/items.service';
 
           <div class="row">
             <button (click)="add(item)">Add to cart</button>
-            <a routerLink="/cart">View cart</a>
           </div>
         </div>
       }

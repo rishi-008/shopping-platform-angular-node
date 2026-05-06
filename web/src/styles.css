@@ -148,6 +148,11 @@ form input {
 	max-width: 560px;
 }
 
+.auth-card form {
+	max-width: none;
+	width: 100%;
+}
+
 /* Shared layout helpers used across pages */
 .row {
 	display: flex;
@@ -159,9 +164,27 @@ form input {
 
 .grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	grid-template-columns: 1fr;
 	gap: 12px;
 	margin-top: 12px;
+}
+
+@media (min-width: 640px) {
+	.grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 900px) {
+	.grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1024px) {
+	.grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
 }
 
 .card {
