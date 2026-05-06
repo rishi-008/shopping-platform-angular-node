@@ -8,30 +8,6 @@ import { OrdersService, type Order } from '../core/orders.service';
   standalone: true,
   selector: 'app-orders-page',
   imports: [RouterLink, DatePipe],
-  styles: [
-    `
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-      }
-
-      th,
-      td {
-        border-bottom: 1px solid;
-        padding: 8px;
-        text-align: left;
-        vertical-align: top;
-      }
-
-      .row {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-top: 12px;
-      }
-    `
-  ],
   template: `
     <h2>Orders</h2>
 

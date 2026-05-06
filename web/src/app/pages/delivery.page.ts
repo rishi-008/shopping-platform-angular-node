@@ -28,12 +28,15 @@ type PublicConfig = {
 
       .branch-card {
         cursor: pointer;
-        border: 1px solid;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: var(--radius);
         padding: 12px;
       }
 
       .branch-card.selected {
         font-weight: 600;
+        border-color: var(--primary);
       }
 
       #map {
@@ -54,6 +57,13 @@ type PublicConfig = {
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         margin-top: 12px;
+      }
+
+      input[type='text'],
+      input[type='date'],
+      input[type='time'] {
+        width: 100%;
+        box-sizing: border-box;
       }
     `
   ],

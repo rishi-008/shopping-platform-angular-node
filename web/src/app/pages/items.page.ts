@@ -8,45 +8,6 @@ import { ItemsService, type Item } from '../core/items.service';
   standalone: true,
   selector: 'app-items-page',
   imports: [RouterLink],
-  styles: [
-    `
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 12px;
-        margin-top: 12px;
-      }
-
-      .card {
-        border: 1px solid;
-        padding: 12px;
-        border-radius: 6px;
-      }
-
-      .thumb {
-        width: 100%;
-        height: 140px;
-        object-fit: contain;
-        display: block;
-        margin-bottom: 8px;
-      }
-
-      .title {
-        font-weight: 600;
-      }
-
-      .meta {
-        font-size: 14px;
-      }
-
-      .row {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-top: 12px;
-      }
-    `
-  ],
   template: `
     <h2>Items</h2>
 
