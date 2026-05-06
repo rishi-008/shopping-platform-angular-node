@@ -1,13 +1,23 @@
 <nav class="nav">
   <a routerLink="/items">Items</a>
-  <a routerLink="/cart">Cart</a>
-  <a routerLink="/orders">Orders</a>
   <span class="spacer"></span>
+
+  @if (isLoggedIn()) {
+    <a class="nav-link" routerLink="/orders">Orders</a>
+  }
+
+  <a class="icon-button" routerLink="/cart" aria-label="Cart">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM6.2 6l.94 4.65A2 2 0 0 0 9.1 12h7.45a2 2 0 0 0 1.96-1.6L19.8 4H6.42l-.2-1H3V1h3.6l1.3 6.5Z"
+      />
+    </svg>
+  </a>
 
   @if (isLoggedIn()) {
     <button (click)="logout()">Logout</button>
   } @else {
-    <a routerLink="/login">Login</a>
+    <a class="nav-link" routerLink="/login">Login</a>
   }
 </nav>
 

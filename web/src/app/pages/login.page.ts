@@ -9,27 +9,29 @@ import { AuthService } from '../core/auth.service';
   selector: 'app-login-page',
   imports: [ReactiveFormsModule],
   template: `
-    <h2>Login</h2>
+    <div class="auth-page">
+      <div class="auth-card">
+        <h2>Login</h2>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <label>
-        Email
-        <input type="email" formControlName="email" autocomplete="email" />
-      </label>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div>
+            <label>Email</label>
+            <input type="email" formControlName="email" autocomplete="email" />
+          </div>
 
-      <label>
-        Password
-        <input type="password" formControlName="password" autocomplete="current-password" />
-      </label>
+          <div>
+            <label>Password</label>
+            <input type="password" formControlName="password" autocomplete="current-password" />
+          </div>
 
-      <button type="submit" [disabled]="form.invalid || loading()">Login</button>
+          <button type="submit" [disabled]="form.invalid || loading()">Login</button>
 
-      @if (error()) {
-        <p class="error">{{ error() }}</p>
-      }
-    </form>
-
-    <p class="hint">Tip: use the test users you created via the API or database.</p>
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+        </form>
+      </div>
+    </div>
   `
 })
 export class LoginPage {

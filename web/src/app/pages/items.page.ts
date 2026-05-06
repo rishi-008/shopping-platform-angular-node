@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
+import { AuthService } from '../core/auth.service';
 import { CartService } from '../core/cart.service';
 import { ItemsService, type Item } from '../core/items.service';
 
@@ -38,6 +39,8 @@ import { ItemsService, type Item } from '../core/items.service';
 export class ItemsPage {
   private readonly itemsService = inject(ItemsService);
   private readonly cartService = inject(CartService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly items = signal<Item[]>([]);
   readonly error = signal<string | null>(null);
@@ -50,6 +53,11 @@ export class ItemsPage {
   }
 
   add(item: Item) {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
     this.cartService.addItem(item.Item_Id, 1).subscribe({
       error: (err) => this.error.set(err?.error?.error || err?.message || 'Failed to add to cart')
     });

@@ -133,6 +133,17 @@ form input {
 	font-size: 14px;
 }
 
+.auth-page {
+	min-height: calc(100vh - 64px);
+	display: grid;
+	place-items: center;
+	padding: 24px 0;
+}
+
+.auth-card {
+	width: min(680px, 100%);
+}
+
 /* Shared layout helpers used across pages */
 .row {
 	display: flex;

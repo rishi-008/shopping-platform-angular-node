@@ -12,7 +12,7 @@ import { OrdersPage } from './pages/orders.page';
 export const routes: Routes = [
 	{ path: '', pathMatch: 'full', redirectTo: 'items' },
 	{ path: 'login', component: LoginPage },
-	{ path: 'items', component: ItemsPage, canActivate: [authGuard] },
+	{ path: 'items', component: ItemsPage },
 	{ path: 'cart', component: CartPage, canActivate: [authGuard] },
 	{ path: 'delivery', component: DeliveryPage, canActivate: [authGuard] },
 	{ path: 'no-trucks', component: NoTrucksPage, canActivate: [authGuard] },
