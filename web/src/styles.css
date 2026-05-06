@@ -144,6 +144,10 @@ form input {
 	width: min(680px, 100%);
 }
 
+.auth-card form {
+	max-width: 560px;
+}
+
 /* Shared layout helpers used across pages */
 .row {
 	display: flex;
