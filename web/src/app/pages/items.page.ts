@@ -20,7 +20,7 @@ import { ItemsService, type Item } from '../core/items.service';
       @for (item of items(); track item.Item_Id) {
         <div class="card">
           @if (item.Image_URL) {
-            <img class="thumb" [src]="'/' + item.Image_URL" [alt]="item.Item_name" />
+            <img class="thumb" [src]="imageSrc(item)" [alt]="item.Item_name" />
           }
 
           <div class="title">{{ item.Item_name }}</div>
@@ -43,6 +43,12 @@ export class ItemsPage {
 
   readonly items = signal<Item[]>([]);
   readonly error = signal<string | null>(null);
+
+  imageSrc(item: Item): string | null {
+    const url = item.Image_URL;
+    if (!url) return null;
+    return url.startsWith('http://') || url.startsWith('https://') ? url : '/' + url;
+  }
 
   constructor() {
     this.itemsService.list().subscribe({
