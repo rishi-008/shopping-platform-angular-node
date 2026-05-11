@@ -34,6 +34,30 @@ export class AuthService {
 
   readonly accessToken = signal<string | null>(localStorage.getItem('accessToken'));
   readonly refreshToken = signal<string | null>(localStorage.getItem('refreshToken'));
+  readonly userType = signal<UserType | null>(this.readStoredUserType());
+
+  private readStoredUserType(): UserType | null {
+    const raw = localStorage.getItem('userType');
+    return raw === 'admin' || raw === 'user' ? raw : null;
+  }
+
+  private decodeUserTypeFromAccessToken(token: string): UserType | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(
+        atob(payload)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const data = JSON.parse(json) as { user_type?: unknown };
+      return data.user_type === 'admin' || data.user_type === 'user' ? data.user_type : null;
+    } catch {
+      return null;
+    }
+  }
 
   isLoggedIn(): boolean {
     return Boolean(this.accessToken() && this.refreshToken());
@@ -70,12 +94,27 @@ export class AuthService {
     localStorage.setItem('refreshToken', refreshToken);
     this.accessToken.set(accessToken);
     this.refreshToken.set(refreshToken);
+
+    const ut = this.decodeUserTypeFromAccessToken(accessToken);
+    if (ut) {
+      localStorage.setItem('userType', ut);
+      this.userType.set(ut);
+    } else {
+      localStorage.removeItem('userType');
+      this.userType.set(null);
+    }
   }
 
   logout() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userType');
     this.accessToken.set(null);
     this.refreshToken.set(null);
+    this.userType.set(null);
+  }
+
+  isAdmin(): boolean {
+    return this.isLoggedIn() && this.userType() === 'admin';
   }
 }

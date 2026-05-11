@@ -11,6 +11,7 @@ import { registerOrdersRoutes } from './routes/orders.js';
 import { registerPublicConfigRoutes } from './routes/publicConfig.js';
 import { registerMeRoutes } from './routes/me.js';
 import { registerBranchRoutes } from './routes/branches.js';
+import { registerAdminItemRoutes } from './routes/adminItems.js';
 import { resetTruckAvailability } from './jobs/resetTruckAvailability.js';
 
 const app = express();
@@ -25,6 +26,7 @@ registerItemRoutes(api);
 registerAuthRoutes(api);
 registerMeRoutes(api);
 registerBranchRoutes(api);
+registerAdminItemRoutes(api);
 registerCartRoutes(api);
 registerCheckoutRoutes(api);
 registerOrdersRoutes(api);

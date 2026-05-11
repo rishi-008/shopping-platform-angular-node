@@ -6,6 +6,10 @@
     <a class="nav-link" routerLink="/orders">Orders</a>
   }
 
+  @if (isAdmin()) {
+    <a class="nav-link" routerLink="/admin/items">Admin</a>
+  }
+
   <a class="icon-button" routerLink="/cart" aria-label="Cart">
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path
