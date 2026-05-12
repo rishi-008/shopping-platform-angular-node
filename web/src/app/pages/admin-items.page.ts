@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ItemsService, type Item } from '../core/items.service';
+import { UploadsService } from '../core/uploads.service';
 
 @Component({
   standalone: true,
@@ -24,6 +25,7 @@ import { ItemsService, type Item } from '../core/items.service';
         <input placeholder="Price" type="number" step="0.01" formControlName="Price" />
         <input placeholder="Made in (optional)" formControlName="Made_in" />
         <input placeholder="Image URL (optional)" formControlName="Image_URL" />
+        <input type="file" accept="image/*" (change)="onCreateFileSelected($event)" />
         <button type="submit" [disabled]="form.invalid || loading()">Create</button>
       </form>
     </div>
@@ -69,6 +71,11 @@ import { ItemsService, type Item } from '../core/items.service';
             />
           </label>
 
+          <label>
+            Upload new image
+            <input type="file" accept="image/*" (change)="onExistingFileSelected(item.Item_Id, $event)" />
+          </label>
+
           <div class="row" style="justify-content: flex-end;">
             <button (click)="save(item.Item_Id)" [disabled]="loading()">Save</button>
           </div>
@@ -79,6 +86,7 @@ import { ItemsService, type Item } from '../core/items.service';
 })
 export class AdminItemsPage {
   private readonly itemsService = inject(ItemsService);
+  private readonly uploads = inject(UploadsService);
 
   readonly items = signal<Item[]>([]);
   readonly error = signal<string | null>(null);
@@ -95,8 +103,42 @@ export class AdminItemsPage {
     Image_URL: new FormControl<string>('')
   });
 
+  private createImageFile: File | null = null;
+  private existingImageFiles = new Map<number, File>();
+
   constructor() {
     this.reload();
+  }
+
+  onCreateFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.createImageFile = file;
+  }
+
+  onExistingFileSelected(itemId: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.existingImageFiles.set(itemId, file);
+  }
+
+  private async uploadImage(file: File): Promise<string> {
+    const presign = await this.uploads.presignImageUpload(file.name, file.type).toPromise();
+    if (!presign) throw new Error('Failed to presign upload');
+
+    const res = await fetch(presign.uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type
+      },
+      body: file
+    });
+
+    if (!res.ok) {
+      throw new Error(`Upload failed (${res.status})`);
+    }
+
+    return presign.publicUrl;
   }
 
   reload() {
@@ -115,25 +157,34 @@ export class AdminItemsPage {
 
     const raw = this.form.getRawValue();
 
-    this.itemsService
-      .create({
-        Item_name: raw.Item_name,
-        Department_Code: raw.Department_Code,
-        Price: Number(raw.Price),
-        Made_in: raw.Made_in?.trim() ? raw.Made_in.trim() : null,
-        Image_URL: raw.Image_URL?.trim() ? raw.Image_URL.trim() : null
-      })
-      .subscribe({
-        next: () => {
-          this.form.reset({ Item_name: '', Department_Code: '', Price: null, Made_in: '', Image_URL: '' });
-          this.loading.set(false);
-          this.reload();
-        },
-        error: (err) => {
-          this.error.set(err?.error?.error || err?.message || 'Failed to create item');
-          this.loading.set(false);
+    (async () => {
+      try {
+        let imageUrl = raw.Image_URL?.trim() ? raw.Image_URL.trim() : null;
+
+        if (this.createImageFile) {
+          imageUrl = await this.uploadImage(this.createImageFile);
         }
-      });
+
+        await this.itemsService
+          .create({
+            Item_name: raw.Item_name,
+            Department_Code: raw.Department_Code,
+            Price: Number(raw.Price),
+            Made_in: raw.Made_in?.trim() ? raw.Made_in.trim() : null,
+            Image_URL: imageUrl
+          })
+          .toPromise();
+
+        this.createImageFile = null;
+        this.form.reset({ Item_name: '', Department_Code: '', Price: null, Made_in: '', Image_URL: '' });
+        this.loading.set(false);
+        this.reload();
+      } catch (e) {
+        const message = (e as any)?.error?.error || (e as Error)?.message || 'Failed to create item';
+        this.error.set(message);
+        this.loading.set(false);
+      }
+    })();
   }
 
   setDraft(itemId: number, key: keyof Item, value: string) {
@@ -152,24 +203,32 @@ export class AdminItemsPage {
 
   save(itemId: number) {
     const draft = this.drafts.get(itemId);
-    if (!draft || Object.keys(draft).length === 0) return;
+    const file = this.existingImageFiles.get(itemId);
+    if ((!draft || Object.keys(draft).length === 0) && !file) return;
 
     this.loading.set(true);
     this.error.set(null);
 
-    const payload: any = { ...draft };
-    if (payload.Price != null) payload.Price = Number(payload.Price);
+    (async () => {
+      try {
+        const payload: any = { ...(draft ?? {}) };
+        if (payload.Price != null) payload.Price = Number(payload.Price);
 
-    this.itemsService.update(itemId, payload).subscribe({
-      next: () => {
+        if (file) {
+          payload.Image_URL = await this.uploadImage(file);
+        }
+
+        await this.itemsService.update(itemId, payload).toPromise();
+
         this.drafts.delete(itemId);
+        this.existingImageFiles.delete(itemId);
         this.loading.set(false);
         this.reload();
-      },
-      error: (err) => {
-        this.error.set(err?.error?.error || err?.message || 'Failed to update item');
+      } catch (e) {
+        const message = (e as any)?.error?.error || (e as Error)?.message || 'Failed to update item';
+        this.error.set(message);
         this.loading.set(false);
       }
-    });
+    })();
   }
 }
