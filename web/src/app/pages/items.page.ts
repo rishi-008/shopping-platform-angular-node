@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../core/auth.service';
@@ -12,12 +12,24 @@ import { ItemsService, type Item } from '../core/items.service';
   template: `
     <h2>Items</h2>
 
+    <div class="row" style="gap: 8px; align-items: center; margin: 12px 0; flex-wrap: wrap;">
+      <input
+        placeholder="Search by product name or department"
+        [value]="query()"
+        (input)="setQuery($any($event.target).value)"
+        style="min-width: 240px;"
+      />
+      @if (query().trim()) {
+        <button type="button" (click)="clearQuery()">Clear</button>
+      }
+    </div>
+
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
 
     <div class="grid">
-      @for (item of items(); track item.Item_Id) {
+      @for (item of filteredItems(); track item.Item_Id) {
         <div class="card">
           @if (item.Image_URL) {
             <img class="thumb" [src]="imageSrc(item)" [alt]="item.Item_name" />
@@ -32,6 +44,13 @@ import { ItemsService, type Item } from '../core/items.service';
           </div>
         </div>
       }
+
+      @if (filteredItems().length === 0) {
+        <div class="card">
+          <div class="title">No results</div>
+          <div class="meta">Try a different search term.</div>
+        </div>
+      }
     </div>
   `
 })
@@ -43,6 +62,27 @@ export class ItemsPage {
 
   readonly items = signal<Item[]>([]);
   readonly error = signal<string | null>(null);
+  readonly query = signal('');
+
+  readonly filteredItems = computed(() => {
+    const allItems = this.items();
+    const q = this.query().trim().toLowerCase();
+    if (!q) return allItems;
+
+    return allItems.filter((item) => {
+      const name = item.Item_name?.toLowerCase() ?? '';
+      const dept = item.Department_Code?.toLowerCase() ?? '';
+      return name.includes(q) || dept.includes(q);
+    });
+  });
+
+  setQuery(value: string) {
+    this.query.set(String(value ?? ''));
+  }
+
+  clearQuery() {
+    this.query.set('');
+  }
 
   imageSrc(item: Item): string | null {
     const url = item.Image_URL;
