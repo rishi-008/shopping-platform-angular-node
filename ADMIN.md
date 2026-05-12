@@ -39,4 +39,26 @@ SPACES_SECRET_ACCESS_KEY=...
 SPACES_PRODUCTS_PREFIX=shopping-website-product-images
 ```
 
-Spaces CORS must allow browser `PUT` from your site origin (e.g. `https://productsmarket.tech`).
+Spaces CORS must allow browser `PUT` from your site origin.
+
+- If you access the site on `https://productsmarket.tech`, allow that origin.
+- If you access the site on `https://www.productsmarket.tech`, allow that origin too.
+
+Example S3/Spaces CORS rule (adjust the `AllowedOrigin` values to match what you use):
+
+```xml
+<CORSConfiguration>
+	<CORSRule>
+		<AllowedOrigin>https://productsmarket.tech</AllowedOrigin>
+		<AllowedOrigin>https://www.productsmarket.tech</AllowedOrigin>
+		<AllowedMethod>GET</AllowedMethod>
+		<AllowedMethod>HEAD</AllowedMethod>
+		<AllowedMethod>PUT</AllowedMethod>
+		<AllowedHeader>*</AllowedHeader>
+		<ExposeHeader>ETag</ExposeHeader>
+		<MaxAgeSeconds>3000</MaxAgeSeconds>
+	</CORSRule>
+</CORSConfiguration>
+```
+
+Note: the browser upload includes `Content-Type` and `x-amz-acl: public-read`. If you don't use `AllowedHeader *`, ensure your CORS rule allows at least `content-type` and `x-amz-acl`.

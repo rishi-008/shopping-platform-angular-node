@@ -129,7 +129,9 @@ export class AdminItemsPage {
     const res = await fetch(presign.uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': file.type
+        'Content-Type': file.type,
+        // Match the server-side PutObjectCommand ACL so the uploaded object is publicly readable.
+        'x-amz-acl': 'public-read'
       },
       body: file
     });
