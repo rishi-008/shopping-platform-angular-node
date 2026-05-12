@@ -12,6 +12,7 @@ import { registerPublicConfigRoutes } from './routes/publicConfig.js';
 import { registerMeRoutes } from './routes/me.js';
 import { registerBranchRoutes } from './routes/branches.js';
 import { registerAdminItemRoutes } from './routes/adminItems.js';
+import { registerAdminUploadRoutes } from './routes/adminUploads.js';
 import { resetTruckAvailability } from './jobs/resetTruckAvailability.js';
 
 const app = express();
@@ -27,6 +28,7 @@ registerAuthRoutes(api);
 registerMeRoutes(api);
 registerBranchRoutes(api);
 registerAdminItemRoutes(api);
+registerAdminUploadRoutes(api);
 registerCartRoutes(api);
 registerCheckoutRoutes(api);
 registerOrdersRoutes(api);

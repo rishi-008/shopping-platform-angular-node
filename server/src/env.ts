@@ -10,6 +10,10 @@ function mustGet(name: string, fallback?: string): string {
   return value;
 }
 
+function getOptional(name: string, fallback?: string): string {
+  return process.env[name] ?? fallback ?? '';
+}
+
 export const env = {
   port: Number(process.env.PORT ?? '3001'),
   corsOrigin: mustGet('CORS_ORIGIN', 'http://localhost:4200'),
@@ -32,5 +36,30 @@ export const env = {
     sslMode: (process.env.DB_SSL_MODE ?? 'disable') as 'disable' | 'prefer' | 'require',
     sslCaPath: process.env.DB_SSL_CA_PATH,
     sslCaBase64: process.env.DB_SSL_CA_BASE64
-  }
+  },
+  spaces: (() => {
+    const region = getOptional('SPACES_REGION');
+    const bucket = getOptional('SPACES_BUCKET');
+    const endpoint = getOptional('SPACES_ENDPOINT', region ? `https://${region}.digitaloceanspaces.com` : '');
+    const publicBaseUrl = getOptional(
+      'SPACES_PUBLIC_BASE_URL',
+      bucket && region ? `https://${bucket}.${region}.digitaloceanspaces.com` : ''
+    );
+    const accessKeyId = getOptional('SPACES_ACCESS_KEY_ID');
+    const secretAccessKey = getOptional('SPACES_SECRET_ACCESS_KEY');
+    const productsPrefix = getOptional('SPACES_PRODUCTS_PREFIX', 'shopping-website-product-images');
+
+    const enabled = Boolean(region && bucket && endpoint && publicBaseUrl && accessKeyId && secretAccessKey);
+
+    return {
+      enabled,
+      region,
+      bucket,
+      endpoint,
+      publicBaseUrl: publicBaseUrl.replace(/\/$/, ''),
+      accessKeyId,
+      secretAccessKey,
+      productsPrefix: productsPrefix.replace(/^\//, '').replace(/\/$/, '')
+    };
+  })()
 };
