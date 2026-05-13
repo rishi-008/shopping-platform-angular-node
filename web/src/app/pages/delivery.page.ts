@@ -49,14 +49,22 @@ type PublicConfig = {
         display: flex;
         gap: 12px;
         align-items: center;
-        margin-top: 12px;
+        flex-wrap: wrap;
+        margin: 12px 0;
       }
 
       .grid-2 {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 12px;
         margin-top: 12px;
+      }
+
+      @media (min-width: 900px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+        }
       }
 
       input[type='text'],
