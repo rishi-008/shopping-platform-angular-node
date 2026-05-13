@@ -30,13 +30,13 @@ The admin page supports selecting an image file; the browser uploads directly to
 Required env vars on the server (API container):
 
 ```bash
-SPACES_REGION=tor1
-SPACES_BUCKET=tutor-platform-profile-pics
-SPACES_ENDPOINT=https://tor1.digitaloceanspaces.com
-SPACES_PUBLIC_BASE_URL=https://tutor-platform-profile-pics.tor1.digitaloceanspaces.com
-SPACES_ACCESS_KEY_ID=...
-SPACES_SECRET_ACCESS_KEY=...
-SPACES_PRODUCTS_PREFIX=shopping-website-product-images
+SPACES_REGION=your-region
+SPACES_BUCKET=your-bucket-name
+SPACES_ENDPOINT=https://your-region.digitaloceanspaces.com
+SPACES_PUBLIC_BASE_URL=https://your-bucket-name.your-region.digitaloceanspaces.com
+SPACES_ACCESS_KEY_ID=your-access-key-id
+SPACES_SECRET_ACCESS_KEY=your-secret-access-key
+SPACES_PRODUCTS_PREFIX=your-products-prefix
 ```
 
 Spaces CORS must allow browser `PUT` from your site origin.
@@ -62,3 +62,5 @@ Example S3/Spaces CORS rule (adjust the `AllowedOrigin` values to match what you
 ```
 
 Note: the browser upload includes `Content-Type` and `x-amz-acl: public-read`. If you don't use `AllowedHeader *`, ensure your CORS rule allows at least `content-type` and `x-amz-acl`.
+
+Security note: do NOT commit real credentials to the repo; keep keys in `.env` or a secret manager and share only with trusted team members.
