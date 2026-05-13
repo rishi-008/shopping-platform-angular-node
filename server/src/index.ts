@@ -13,6 +13,7 @@ import { registerMeRoutes } from './routes/me.js';
 import { registerBranchRoutes } from './routes/branches.js';
 import { registerAdminItemRoutes } from './routes/adminItems.js';
 import { registerAdminUploadRoutes } from './routes/adminUploads.js';
+import { registerStripeRoutes } from './routes/stripe.js';
 import { resetTruckAvailability } from './jobs/resetTruckAvailability.js';
 
 const app = express();
@@ -29,6 +30,7 @@ registerMeRoutes(api);
 registerBranchRoutes(api);
 registerAdminItemRoutes(api);
 registerAdminUploadRoutes(api);
+registerStripeRoutes(api);
 registerCartRoutes(api);
 registerCheckoutRoutes(api);
 registerOrdersRoutes(api);

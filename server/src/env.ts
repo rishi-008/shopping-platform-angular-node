@@ -18,6 +18,20 @@ export const env = {
   port: Number(process.env.PORT ?? '3001'),
   corsOrigin: mustGet('CORS_ORIGIN', 'http://localhost:4200'),
   googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
+  stripe: (() => {
+    const secretKey = getOptional('STRIPE_SECRET_KEY');
+    const publishableKey = getOptional('STRIPE_PUBLISHABLE_KEY');
+    const currency = (getOptional('STRIPE_CURRENCY', 'usd') || 'usd').toLowerCase();
+
+    const enabled = Boolean(secretKey && publishableKey);
+
+    return {
+      enabled,
+      secretKey,
+      publishableKey,
+      currency
+    };
+  })(),
   jobs: {
     resetTrucksIntervalMs: Number(process.env.RESET_TRUCKS_INTERVAL_MS ?? String(60 * 60 * 1000))
   },

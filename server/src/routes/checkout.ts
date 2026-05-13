@@ -3,7 +3,9 @@ import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import crypto from 'node:crypto';
 
 import { pool } from '../db.js';
+import { env } from '../env.js';
 import { requireAuth } from '../middleware/requireAuth.js';
+import { getStripeClient } from '../stripe/stripeClient.js';
 
 type CartPriceRow = RowDataPacket & {
   Item_Id: number;
@@ -46,9 +48,14 @@ export function registerCheckoutRoutes(router: Router) {
 
     const body = req.body as Record<string, unknown>;
     const delivery = body.delivery as Record<string, unknown> | undefined;
+    const paymentIntentId = body.paymentIntentId;
 
     if (!delivery || typeof delivery !== 'object') {
       return res.status(400).json({ error: 'Missing delivery details' });
+    }
+
+    if (paymentIntentId !== undefined && !isNonEmptyString(paymentIntentId)) {
+      return res.status(400).json({ error: 'paymentIntentId must be a non-empty string' });
     }
 
     const branchId = delivery.branchId;
@@ -70,6 +77,17 @@ export function registerCheckoutRoutes(router: Router) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+
+      let stripePaymentVerified = false;
+      const maybeRefundStripePayment = async (reason: string) => {
+        if (!paymentIntentId || !stripePaymentVerified) return;
+        try {
+          const stripe = getStripeClient();
+          await stripe.refunds.create({ payment_intent: paymentIntentId as string, reason: 'requested_by_customer' });
+        } catch {
+          // Best-effort refund; ignore errors so we can return the original failure.
+        }
+      };
 
       const [addressRows] = await connection.query<AddressRow[]>(
         'SELECT Address FROM Users WHERE User_Id = :userId LIMIT 1',
@@ -95,6 +113,40 @@ export function registerCheckoutRoutes(router: Router) {
       if (cartRows.length === 0) {
         await connection.rollback();
         return res.status(400).json({ error: 'Cart is empty' });
+      }
+
+      const total = cartRows.reduce((sum, row) => {
+        const price = typeof row.Price === 'string' ? Number(row.Price) : row.Price;
+        return sum + price * row.Quantity;
+      }, 0);
+
+      // If a Stripe payment was provided, verify it before attempting checkout.
+      if (paymentIntentId) {
+        if (!env.stripe.enabled) {
+          await connection.rollback();
+          return res.status(500).json({ error: 'Stripe is not configured on the server' });
+        }
+
+        const stripe = getStripeClient();
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId as string);
+
+        if (pi.metadata?.userId && pi.metadata.userId !== String(userId)) {
+          await connection.rollback();
+          return res.status(403).json({ error: 'Payment does not belong to this user' });
+        }
+
+        if (pi.status !== 'succeeded') {
+          await connection.rollback();
+          return res.status(400).json({ error: `Payment not completed (status: ${pi.status})` });
+        }
+
+        const expectedAmount = Math.round(total * 100);
+        if (pi.amount !== expectedAmount) {
+          await connection.rollback();
+          return res.status(400).json({ error: 'Payment amount does not match cart total' });
+        }
+
+        stripePaymentVerified = true;
       }
 
       // 1) Pick an available truck near the requested slot (matches legacy PHP logic)
@@ -134,11 +186,13 @@ export function registerCheckoutRoutes(router: Router) {
           { deliveryDateTime }
         );
 
+        await maybeRefundStripePayment('no_trucks');
         await connection.rollback();
 
         return res.status(409).json({
           error: 'No available trucks for your selected time',
-          nextAvailable: nextRows[0]?.next_available ?? null
+          nextAvailable: nextRows[0]?.next_available ?? null,
+          paymentRefunded: Boolean(paymentIntentId && stripePaymentVerified)
         });
       }
 
@@ -151,12 +205,14 @@ export function registerCheckoutRoutes(router: Router) {
       );
 
       if (truckAvailRows.length === 0) {
+        await maybeRefundStripePayment('truck_not_available');
         await connection.rollback();
         return res.status(409).json({ error: 'Truck no longer available', nextAvailable: null });
       }
 
       const availability = truckAvailRows[0].Availability;
       if (availability !== 'available' && availability !== 'in_transit') {
+        await maybeRefundStripePayment('truck_not_available');
         await connection.rollback();
         return res.status(409).json({ error: 'Truck no longer available', nextAvailable: null });
       }
@@ -192,10 +248,12 @@ export function registerCheckoutRoutes(router: Router) {
           { deliveryDateTime }
         );
 
+        await maybeRefundStripePayment('no_trucks');
         await connection.rollback();
         return res.status(409).json({
           error: 'No available trucks for your selected time',
-          nextAvailable: nextRows[0]?.next_available ?? null
+          nextAvailable: nextRows[0]?.next_available ?? null,
+          paymentRefunded: Boolean(paymentIntentId && stripePaymentVerified)
         });
       }
 
@@ -228,11 +286,6 @@ export function registerCheckoutRoutes(router: Router) {
 
       const tripId = tripResult.insertId;
 
-      const total = cartRows.reduce((sum, row) => {
-        const price = typeof row.Price === 'string' ? Number(row.Price) : row.Price;
-        return sum + price * row.Quantity;
-      }, 0);
-
       const [orderResult] = await connection.query<ResultSetHeader>(
         `
         INSERT INTO Orders (User_Id, Trip_Id, Total_Price, Status)
@@ -242,15 +295,26 @@ export function registerCheckoutRoutes(router: Router) {
       );
 
       const orderId = orderResult.insertId;
-      const transactionId = crypto.randomUUID();
 
-      await connection.query(
-        `
-        INSERT INTO Payment (Order_Id, Amount, Payment_Method, Transaction_Id, Status)
-        VALUES (:orderId, :amount, 'Mock', :transactionId, 'completed')
-        `,
-        { orderId, amount: total, transactionId }
-      );
+      if (paymentIntentId) {
+        await connection.query(
+          `
+          INSERT INTO Payment (Order_Id, Amount, Payment_Method, Transaction_Id, Status)
+          VALUES (:orderId, :amount, 'Stripe', :transactionId, 'completed')
+          `,
+          { orderId, amount: total, transactionId: paymentIntentId }
+        );
+      } else {
+        const transactionId = crypto.randomUUID();
+
+        await connection.query(
+          `
+          INSERT INTO Payment (Order_Id, Amount, Payment_Method, Transaction_Id, Status)
+          VALUES (:orderId, :amount, 'Mock', :transactionId, 'completed')
+          `,
+          { orderId, amount: total, transactionId }
+        );
+      }
 
       await connection.query(
         `
@@ -266,6 +330,20 @@ export function registerCheckoutRoutes(router: Router) {
       await connection.commit();
       return res.json({ ok: true, orderId, total, tripId });
     } catch (error) {
+      try {
+        if (paymentIntentId) {
+          // If a Stripe payment was already verified, attempt a best-effort refund.
+          const stripe = env.stripe.enabled ? getStripeClient() : null;
+          if (stripe) {
+            const pi = await stripe.paymentIntents.retrieve(paymentIntentId as string);
+            if (pi.status === 'succeeded') {
+              await stripe.refunds.create({ payment_intent: paymentIntentId as string, reason: 'requested_by_customer' });
+            }
+          }
+        }
+      } catch {
+        // Ignore refund errors on 500s.
+      }
       await connection.rollback();
       return res.status(500).json({ error: (error as Error).message });
     } finally {

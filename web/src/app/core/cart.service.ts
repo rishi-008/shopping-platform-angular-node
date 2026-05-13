@@ -57,7 +57,7 @@ export class CartService {
     return this.http.delete<{ ok: true }>(`${this.apiBaseUrl}/cart`);
   }
 
-  checkout(delivery: DeliveryPlanPayload) {
-    return this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, { delivery });
+  checkout(delivery: DeliveryPlanPayload, paymentIntentId?: string) {
+    return this.http.post<CheckoutResponse>(`${this.apiBaseUrl}/checkout`, { delivery, paymentIntentId });
   }
 }

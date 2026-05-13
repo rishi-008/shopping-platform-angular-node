@@ -16,6 +16,12 @@ JWT env vars required for the Node API:
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 
+Stripe (optional, test mode):
+
+- `STRIPE_SECRET_KEY` (e.g. `sk_test_...`)
+- `STRIPE_PUBLISHABLE_KEY` (e.g. `pk_test_...`)
+- `STRIPE_CURRENCY` (default `usd`)
+
 If you’re using `docker-compose` v1 on the droplet, use:
 
 ```bash
@@ -46,6 +52,10 @@ Auth + cart:
 - `POST http://localhost:3001/api/auth/login`
 - `POST http://localhost:3001/api/auth/refresh`
 - `GET http://localhost:3001/api/cart` (Bearer token)
+
+Stripe test-mode:
+
+- On the Checkout page, use test card `4242 4242 4242 4242` (any future expiry, any CVC).
 
 ### Notes
 
